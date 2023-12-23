@@ -31,7 +31,7 @@ app.use(express.static('uploads'));
 app.use('/api/user', user);
 app.use('/api/product', product);
 connectToDatabase()
- 
+  
 app.listen(8000, () => {
   console.log('Server running on http://localhost:8080/');
 });
