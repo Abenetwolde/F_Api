@@ -10,6 +10,8 @@ import { connectToDatabase } from '../config/db';
 import user from "./routers/user"
 import product from './routers/product';
 import category from './routers/category';
+import order from './routers/order';
+import payment from './routers/payment';
 import mongoose from 'mongoose';
 import path from 'path';
 
@@ -32,6 +34,8 @@ app.use(express.static('uploads'));
 app.use('/api/user', user);
 app.use('/api/product', product);
 app.use('/api/category', category);
+app.use('/api/order', order);
+app.use('/api/payment', payment);
 connectToDatabase()
   
 app.listen(8000, () => {
