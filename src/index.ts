@@ -35,7 +35,7 @@ connectToDatabase()
 app.listen(8000, () => {
   console.log('Server running on http://localhost:8080/');
 });
-
+ 
  
 mongoose.connection.on('error', (error: Error) => console.log(error));
 
