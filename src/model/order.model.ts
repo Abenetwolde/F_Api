@@ -10,7 +10,7 @@ const orderSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   orderId: { type: Number,required: true },
   items: [orderItemSchema],
-  note:{String,required:false},
+  note:{String},
   totalAmount: { type: Number, required: true, min: 0 },
   deliveryAddress: {
     street: String,

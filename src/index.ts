@@ -12,9 +12,9 @@ import product from './routers/product';
 import category from './routers/category';
 import order from './routers/order';
 import payment from './routers/payment';
-import mongoose from 'mongoose';
+// import mongoose from 'mongoose';
 import path from 'path';
-
+ 
 const app = express();
 
 app.use(express.json({ limit: '10mb' }));
@@ -43,6 +43,6 @@ app.listen(8000, () => {
 });
  
  
-mongoose.connection.on('error', (error: Error) => console.log(error));
+// mongoose.connection.on('error', (error: Error) => console.log(error));
 
 // app.use('/', router());
