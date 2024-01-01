@@ -2,13 +2,13 @@
 // Create a new product
 import express, { Request, Response } from 'express';
 import Product from '../model/food.model';
-import multer from 'multer';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import mv from 'mv';
 export const createProduct = async (req: Request, res: Response) => {
+   console.log("create Prodcut")
     try {
-      const { name, description, price, category, images, tags, cookTime } = req.body;
+      const { name, description, price, category, images, available, cookTime } = req.body;
   
       // Check if the product already exists
       const existingProduct = await Product.findOne({ name });
@@ -18,13 +18,7 @@ export const createProduct = async (req: Request, res: Response) => {
   
       // Create a new product
       const newProduct = new Product({
-        name,
-        description,
-        price,
-        category,
-        images,
-        tags,
-        cookTime,
+      ...req.body
       });
   
       // Save the product to the database
@@ -42,6 +36,7 @@ export const createProduct = async (req: Request, res: Response) => {
 
 // Advanced product retrieval with filtering, sorting, pagination, and search
 export const getProducts = async (req: Request, res: Response) => {
+  console.log("getProduct")
     try {
       // Define the base filter
       let filter: any = {};

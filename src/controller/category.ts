@@ -3,6 +3,7 @@ import Category from '../model/category.model';
 
 
 export const createCategory = async (req: Request, res: Response) => {
+  console.log("reach create caregory")
   try {
     const { name, icon } = req.body;
 
@@ -28,17 +29,62 @@ export const createCategory = async (req: Request, res: Response) => {
   }
 };
 export const getAllCategories = async (req: Request, res: Response) => {
-    try {
-      const categories = await Category.find();
-  
-      res.status(200).json({
-        success: true,
-        categories,
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ success: false, message: 'Server error!' });
+  console.log("reach get caregory")
+  try {
+    // Define the base filter
+    let filter: any = {};
+
+ 
+
+    // Apply search filter if provided in the query parameters
+    if (typeof req.query.search === 'string') {
+      filter.name = { $regex: req.query.search, $options: 'i' };
+    } 
+
+    // Define the sorting criteria based on the 'sortBy' query parameter
+    let sortQuery: any;
+    switch (req.query.sortBy) {
+      case 'latest':
+        sortQuery = { createdAt: -1 };
+        break;
+      case 'popular':
+        sortQuery = { countInStock: -1 };
+        break;
+      default:
+        sortQuery = {};
     }
+
+    // Parse the page and pageSize query parameters
+    const page = parseInt(req.query.page as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 10; // Adjust the default page size as needed/ Adjust the default page size as needed
+
+    // Calculate the number of products to skip
+    const skip = (page - 1) * pageSize;
+
+    // Find the products for the current page
+    const categorys = await Category.find(filter)
+      .skip(skip)
+      .limit(pageSize)
+      .sort(sortQuery);
+
+    // Count the total number of products
+    const count = await Category.countDocuments(filter);
+
+    // Calculate the total number of pages
+    const totalPages = Math.ceil(count / pageSize);
+
+    res.status(200).json({
+      success: true,
+      categorys,
+      count,
+      page,
+      pageSize,
+      totalPages,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error!' });
+  }
   };
   export const getCategoryById = async (req: Request, res: Response) => {
     try {
@@ -59,13 +105,14 @@ export const getAllCategories = async (req: Request, res: Response) => {
     }
   };
   export const updateCategory = async (req: Request, res: Response) => {
+    console.log("hit the update category api")
     try {
       const { categoryId } = req.params;
-      const { name, icon } = req.body;
+    
   
       const updatedCategory = await Category.findByIdAndUpdate(
         categoryId,
-        { name, icon },
+       { ...req.body},
         { new: true } // Return the updated category
       );
   
@@ -83,6 +130,7 @@ export const getAllCategories = async (req: Request, res: Response) => {
     }
   };
   export const deleteCategory = async (req: Request, res: Response) => {
+    console.log("hit delete category api")
     try {
       const { categoryId } = req.params;
   
