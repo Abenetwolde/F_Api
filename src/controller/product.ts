@@ -161,6 +161,7 @@ export const getProductById = async (req: Request, res: Response) => {
 // PUT /api/products/:productId
 // Update a product by ID
 export const updateProductById = async (req: Request, res: Response) => {
+  console.log("update prodcut.....")
     try {
       const productId = req.params.productId;
       const { name, description, price, category, images, tags, cookTime } = req.body;
