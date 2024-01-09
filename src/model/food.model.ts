@@ -11,6 +11,8 @@ interface IProduct extends Document {
   images: string[];
   orderQuantity: number;
   cookTime: string;
+  highlights:string[];
+
 }
 
 // Schema definition
@@ -21,6 +23,11 @@ const productSchema: Schema<IProduct> = new Schema<IProduct>({
   available: { type: Boolean, default: true },
   category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
   images: [String],
+  highlights: [
+    {
+        type: String,
+    }
+],
   orderQuantity: { type: Number, default: 0 },
   cookTime: { type: String },
 });

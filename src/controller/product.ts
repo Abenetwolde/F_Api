@@ -19,11 +19,12 @@ export const createProduct = async (req: Request, res: Response) => {
       // Create a new product
       const newProduct = new Product({
       ...req.body
-      });
+      })
   
       // Save the product to the database
       const savedProduct = await newProduct.save();
-  
+      await savedProduct.populate('category')
+
       res.status(201).json({
         success: true,
         product: savedProduct,
