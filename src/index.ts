@@ -6,6 +6,7 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import cors from 'cors';
+const cloudinary = require('cloudinary');
 import { connectToDatabase } from '../config/db';
 import user from "./routers/user"
 import product from './routers/product';
@@ -30,7 +31,12 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(express.static('uploads'));
 
+cloudinary.config({
 
+  cloud_name: "abmanwolde",
+  api_key: "827239376525146",
+  api_secret: "qcT03npP3xh4VrLYBBMHuXr2IbQ",
+});
 app.use('/api/user', user);
 app.use('/api/product', product);
 app.use('/api/category', category);

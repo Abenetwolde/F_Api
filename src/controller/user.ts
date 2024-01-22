@@ -15,7 +15,7 @@ exports.createUser = async (req: Request, res: Response) => {
             const telegramId = req.body.telegramid
             const token = jwt.sign(
                 { userId: telegramId },
-                process.env.JWT_TOKEN_SECRET_KEY||"abnet",
+                process.env.JWT_TOKEN_SECRET_KEY || "abnet",
                 { expiresIn: "7d" }
             );
             // const token = jwt.sign({ telegramId }, 'your_secret_key');
@@ -94,7 +94,7 @@ exports.deleteAuser = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, message: 'User not found!' });
         }
 
-        user= await User.findByIdAndDelete(user._id).lean();
+        user = await User.findByIdAndDelete(user._id).lean();
 
         if (!user) {
             return res.status(400).json({ success: false, message: 'User deletion failed!' });
@@ -113,11 +113,26 @@ exports.deleteAuser = async (req: Request, res: Response) => {
 exports.getAllAuser = async (req: Request, res: Response) => {
     console.log("hit the get all user api")
     try {
-        let users = await User.find();
+        // Parse the page and pageSize query parameters
+        const page = parseInt(req.query.page as string) || 1;
+        const pageSize = parseInt(req.query.pageSize as string) || 10; // Adjust the default page size as needed/ Adjust the default page size as needed
+
+        // Calculate the number of products to skip
+        const skip = (page - 1) * pageSize;
+        let users = await User.find().skip(skip)
+            .limit(pageSize);
+            const count = await User.countDocuments();
+  
+            // Calculate the total number of pages
+            const totalPages = Math.ceil(count / pageSize);
         if (users) {
             res.status(201).json({
                 success: true,
-                users
+                users,
+                count,
+                page,
+                pageSize,
+                totalPages,
             });
         }
 
@@ -130,36 +145,36 @@ exports.getAllAuser = async (req: Request, res: Response) => {
 
 exports.AddsFavorite = async (req: Request, res: Response) => {
     try {
-      const user = await User.findById(req.params.id);
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-  
-      user.favorites.push(req.body.productId);
-      await user.save();
-      res.status(201).json({
-        success: true,
-        user
-    });
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        user.favorites.push(req.body.productId);
+        await user.save();
+        res.status(201).json({
+            success: true,
+            user
+        });
     } catch (error) {
-      res.status(500).json({ error: "server error" });
+        res.status(500).json({ error: "server error" });
     }
-  };
-  exports.RemovesFavorite = async (req: Request, res: Response) => {
+};
+exports.RemovesFavorite = async (req: Request, res: Response) => {
     try {
         const user = await User.findById(req.params.id);
         if (!user) {
-          return res.status(404).json({ error: 'User not found' });
+            return res.status(404).json({ error: 'User not found' });
         }
-    
+
         user.favorites = user.favorites.filter((fav) => fav.toString() !== req.params.productId);
         await user.save();
-    
+
         res.json(user);
-      } catch (error) {
+    } catch (error) {
         res.status(500).json({ error: "server error" });
-      }
-  };
+    }
+};
 exports.adminLogin = async (req: Request, res: Response) => {
     console.log("hit the adminlogin api")
     try {
@@ -175,7 +190,7 @@ exports.adminLogin = async (req: Request, res: Response) => {
             // Create token
             const token = jwt.sign(
                 { user_id: user._id, email },
-                process.env.JWT_TOKEN_SECRET_KEY||"abnet",
+                process.env.JWT_TOKEN_SECRET_KEY || "abnet",
                 {
                     expiresIn: "1d",
                 }
@@ -215,7 +230,7 @@ exports.adminCreate = async (req: Request, res: Response) => {
     const newUser = await User.create(userData);
     const token = jwt.sign(
         { user_id: newUser._id, email },
-        process.env.JWT_TOKEN_SECRET_KEY||"abnet",
+        process.env.JWT_TOKEN_SECRET_KEY || "abnet",
         {
             expiresIn: "1d",
         }

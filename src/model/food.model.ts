@@ -8,10 +8,16 @@ interface IProduct extends Document {
   price: number;
   available: boolean;
   category: mongoose.Types.ObjectId;
-  images: string[];
+  images: [
+    {
+        public_id: { type: String, required: true },
+        url: { type: String, required: true },
+    },
+],
   orderQuantity: number;
   cookTime: string;
   highlights:string[];
+
 
 }
 

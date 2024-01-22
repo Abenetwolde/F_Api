@@ -4,12 +4,37 @@ import express, { Request, Response } from 'express';
 import Product from '../model/food.model';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+const cloudinary = require('cloudinary');
 import mv from 'mv';
 export const createProduct = async (req: Request, res: Response) => {
    console.log("create Prodcut")
     try {
-      const { name, description, price, category, images, available, cookTime } = req.body;
-  
+      const { name, description, price, category, highlights, available, cookTime } = req.body;
+// console.log("images,...", Array.isArray(imageFiles))
+console.log("images,...",req.body)
+let images = [];
+if (typeof req.body.images === "string") {
+    images.push(req.body.images);
+} else {
+    images = req.body.images;
+}
+
+const imagesLink = [];
+
+for (let i = 0; i < images.length; i++) {
+    const result = await cloudinary.v2.uploader.upload(images[i], {
+        folder: "products",
+    });
+
+    imagesLink.push({
+        public_id: result.public_id,
+        url: result.secure_url,
+    });
+}
+req.body.images = imagesLink;
+
+
+
       // Check if the product already exists
       const existingProduct = await Product.findOne({ name });
       if (existingProduct) {
@@ -17,9 +42,9 @@ export const createProduct = async (req: Request, res: Response) => {
       }
   
       // Create a new product
-      const newProduct = new Product({
-      ...req.body
-      })
+      const newProduct = new Product(
+      req.body,
+)
   
       // Save the product to the database
       const savedProduct = await newProduct.save();
@@ -179,7 +204,7 @@ export const updateProductById = async (req: Request, res: Response) => {
           cookTime,
         },
         { new: true }
-      );
+      ).populate('category');
   
       if (!updatedProduct) {
         return res.status(404).json({ success: false, message: 'Product not found.' });
