@@ -32,7 +32,6 @@ app.use(bodyParser.json());
 app.use(express.static('uploads'));
 
 cloudinary.config({
-
   cloud_name: "abmanwolde",
   api_key: "827239376525146",
   api_secret: "qcT03npP3xh4VrLYBBMHuXr2IbQ",

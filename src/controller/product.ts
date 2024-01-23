@@ -9,29 +9,11 @@ import mv from 'mv';
 export const createProduct = async (req: Request, res: Response) => {
    console.log("create Prodcut")
     try {
-      const { name, description, price, category, highlights, available, cookTime } = req.body;
+      const { name, description, images, price, category, highlights, available, cookTime } = req.body;
 // console.log("images,...", Array.isArray(imageFiles))
 console.log("images,...",req.body)
-let images = [];
-if (typeof req.body.images === "string") {
-    images.push(req.body.images);
-} else {
-    images = req.body.images;
-}
 
-const imagesLink = [];
-
-for (let i = 0; i < images.length; i++) {
-    const result = await cloudinary.v2.uploader.upload(images[i], {
-        folder: "products",
-    });
-
-    imagesLink.push({
-        public_id: result.public_id,
-        url: result.secure_url,
-    });
-}
-req.body.images = imagesLink;
+req.body.images = images;
 
 
 

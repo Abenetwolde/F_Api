@@ -37,7 +37,7 @@ router.route('/create').post(createProduct);
 router.route('/upload').post(upload.array('images', 5), ImageUpload);
 // GET /api/products
 router.route('/getproducts').get(getProducts);
-
+ 
 // GET /api/products/:productId
 router.route('/getproductbybd/:productId').get(getProductById);
 
