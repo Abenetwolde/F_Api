@@ -60,24 +60,25 @@ exports.getUserDetails = async (req: Request, res: Response) => {
 
 }
 exports.updateUserDetails = async (req: Request, res: Response) => {
-    console.log("hit the updateUserDetails user api")
+    console.log("hit the updateUserDetails user api", req.body)
 
     try {
-        let user = await User.findOne({ telegramid: req.params.telegramid });
-
+        let user = await User.findOne({ telegramid: parseInt(req.params.telegramid)});
+        console.log("User.$where..........", user)
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found!' });
         }
-
-        user = await User.findByIdAndUpdate(user._id, req.body, { new: true });
-
-        if (!user) {
+   
+       const  muser = await User.findOneAndUpdate({ telegramid: parseInt(req.params.telegramid) },
+          req.body ,{ new: true });
+      
+        if (!muser) {
             return res.status(400).json({ success: false, message: 'User update failed!' });
         }
 
         res.status(200).json({
             success: true,
-            user
+            user:muser
         });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Server error!' });
@@ -121,10 +122,10 @@ exports.getAllAuser = async (req: Request, res: Response) => {
         const skip = (page - 1) * pageSize;
         let users = await User.find().skip(skip)
             .limit(pageSize);
-            const count = await User.countDocuments();
-  
-            // Calculate the total number of pages
-            const totalPages = Math.ceil(count / pageSize);
+        const count = await User.countDocuments();
+
+        // Calculate the total number of pages
+        const totalPages = Math.ceil(count / pageSize);
         if (users) {
             res.status(201).json({
                 success: true,

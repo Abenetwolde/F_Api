@@ -8,13 +8,19 @@ const addressSchema = new Schema({
   zipCode: String,
   country: String,
 });
-
+const LanguageEnum = {
+  EN: 'en',
+  RU: 'ru',
+};
 export interface IUser extends Document {
     // _id:String,
-  telegramid: string;
+  telegramid: Number;
   email: string;
   password: string;
   name: string;
+  first_name: string;
+  last_name: string;
+  username: string;
   last: string;
   token: string;
   phone: string;
@@ -29,25 +35,35 @@ export interface IUser extends Document {
   orders:Array<Schema.Types.ObjectId>;
   subscriptions: Array<Schema.Types.ObjectId>;
   locale: string;
+  language: string;
+  is_bot:Boolean
 }
 
 const userSchema = new Schema<IUser>({
   telegramid: {
-    type: String,
+    type: Number,
     required:true
   },
   email: {
     type: String,
   },
+
   password: {
     type: String,
   },
-  name: {
+  first_name: {
     type: String,
   },
-  last: {
+  last_name: {
     type: String,
   },
+  username:{
+    type: String,
+  },
+  is_bot:{
+    type: Boolean,
+  },
+ 
   token: {
     type: String,
   },
@@ -56,7 +72,11 @@ const userSchema = new Schema<IUser>({
   orders: [{ type: Schema.Types.ObjectId, ref: 'Order' }],
   favorites: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
   subscriptions: [{ type: Schema.Types.ObjectId, ref: 'Subscription' }],
-  locale: { type: String, default: 'en' },
+  language:   {
+    type: String,
+    default: LanguageEnum.EN,
+    enum: Object.values(LanguageEnum),
+  },
 });
 
 // Export the User model
