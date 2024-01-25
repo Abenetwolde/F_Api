@@ -13,8 +13,11 @@ import {
   getPopularProducts,
   getProductsByAvailabilityAndCategory,
   getProductsExpiringSoon,
-  ImageUpload
+  ImageUpload,
+  uploadImageToCloudinary
 } from '../controller/product';
+
+
 import multer from 'multer';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -34,7 +37,8 @@ const upload = multer({ storage: storage });
 // const upload = multer();
 // POST /api/products 
 router.route('/create').post(createProduct);
-router.route('/upload').post(upload.array('images', 5), ImageUpload);
+// router.route('/upload').post(upload.array('images', 5), ImageUpload);
+router.route('/upload').post(upload.array('images', 5), uploadImageToCloudinary);
 // GET /api/products
 router.route('/getproducts').get(getProducts);
  

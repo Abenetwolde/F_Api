@@ -10,8 +10,12 @@ export const createProduct = async (req: Request, res: Response) => {
    console.log("create Prodcut")
     try {
       const { name, description, images, price, category, highlights, available, cookTime } = req.body;
-// console.log("images,...", Array.isArray(imageFiles))
-console.log("images,...",req.body)
+ console.log("images,...", images)
+const formattedImages = images.map((image: any) => ({
+  imageId: image.imageId, // Assuming you have an imageId in the frontend
+  imageUrl: image.imageUrl,
+}));
+console.log("images,...", formattedImages)
 
 req.body.images = images;
 
@@ -106,6 +110,35 @@ export const getProducts = async (req: Request, res: Response) => {
     } catch (error) {
       console.error(error);
       res.status(500).json({ success: false, message: 'Server error!' });
+    }
+  };
+
+  export const uploadImageToCloudinary = async (req: Request, res: Response) => {
+    console.log("Reached product upload");
+    try {
+      // Ensure that files were uploaded
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ message: 'No files uploaded' });
+      }
+  
+      // Array to store uploaded images data
+      const uploadedImages = [];
+  
+      // Loop through each file and upload to Cloudinary
+      for (const file of req.files as Express.Multer.File[]) {
+        const result = await cloudinary.uploader.upload(file.path);
+        const imageUrl = result.secure_url;
+        const imageId = result.public_id;
+  
+        // Push image data to the array
+        uploadedImages.push({ imageUrl, imageId });
+      }
+  
+      // Send the array of image data to the frontend
+      res.json({imageUrl:uploadedImages});
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Internal Server Error' });
     }
   };
 //   const storage = multer.diskStorage({

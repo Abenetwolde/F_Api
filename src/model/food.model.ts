@@ -28,7 +28,10 @@ const productSchema: Schema<IProduct> = new Schema<IProduct>({
   price: { type: Number, required: true, min: 0 },
   available: { type: Boolean, default: true },
   category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
-  images: [String],
+  images: [{
+    imageId: { type: String, required: true },
+    imageUrl: { type: String, required: true },
+  }],
   highlights: [
     {
         type: String,
