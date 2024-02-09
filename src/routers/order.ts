@@ -12,6 +12,9 @@ import {
   getPaginatedOrders,
   getOrdersByTotalAmountRange,
   getOrderCount,
+  getOrdersPerDay,
+  getCancelledOrdersPerDay,
+  getOrderFoodPerDay
 } from '../controller/order'; // Import order controllers
 import multer from 'multer';
 import path from 'path';
@@ -36,7 +39,9 @@ router.route('/create').post(createOrder);
 
 // GET /api/orders
 router.route('/getorders').get(getOrders);
-
+router.route('/getordersperday').get(getOrdersPerDay);
+router.route('/cancelled-orders-per-day').get(getCancelledOrdersPerDay);
+router.route('/high-order-food').get(getOrderFoodPerDay);
 // GET /api/orders/:orderId
 router.route('/getorderbyid/:orderId').get(getOrderById);
 

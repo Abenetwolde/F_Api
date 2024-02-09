@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import Order from '../model/order.model';
 import Product from '../model/food.model';
+import User from '../model/user.model';
 const generateUniqueID = () => {
     return Math.floor(1000 + Math.random() * 9000);
 };
@@ -21,7 +22,7 @@ export const createOrder = async (req: Request, res: Response) => {
             payment,
         });
         const uniqueID = generateUniqueID();
-        newOrder.orderId = uniqueID;
+        // newOrder.orderId = uniqueID;
         const savedOrder = await newOrder.save();
         // Assuming payment is successful, update product count
         await Promise.all(
@@ -35,7 +36,7 @@ export const createOrder = async (req: Request, res: Response) => {
             })
         );
 
-        res.status(201).json({ success: true, order: savedOrder });
+        // res.status(201).json({ success: true, order: savedOrder });
         res.status(201).json({ success: true, order: savedOrder });
     } catch (error) {
         console.error(error);
@@ -44,6 +45,7 @@ export const createOrder = async (req: Request, res: Response) => {
 };
 
 export const getOrders = async (req: Request, res: Response) => {
+    console.log("get all order")
     try {
         // Define the base filter
         let filter: any = {};
@@ -75,8 +77,12 @@ export const getOrders = async (req: Request, res: Response) => {
 
         // Find the orders for the current page
         const orders = await Order.find(filter)
-            .populate('user')
+            .populate({
+                path: 'orderItems.product',
+                model: 'Product'
+            })
             .populate('payment')
+          
             .skip(skip)
             .limit(pageSize)
             .sort(sortQuery);
@@ -86,10 +92,16 @@ export const getOrders = async (req: Request, res: Response) => {
 
         // Calculate the total number of pages
         const totalPages = Math.ceil(count / pageSize);
-
+   
+    
+    // Fetch user details for each order
+    const ordersWithUserDetails = await Promise.all(orders.map(async (order) => {
+        const user = await User.findOne({telegramid:order.telegramid});
+        return { ...order.toObject(), user };
+    }));
         res.status(200).json({
             success: true,
-            orders,
+            orders:ordersWithUserDetails,
             count,
             page,
             pageSize,
@@ -100,7 +112,109 @@ export const getOrders = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: 'Server error!' });
     }
 };
-
+export const getOrdersPerDay = async(req: Request, res: Response) => {
+    console.log("get all order per day")
+    try {
+      // Get the current date
+      const currentDate = new Date();
+  
+      // Get the start of the current date (midnight)
+      const startDate = new Date(currentDate.setHours(0, 0, 0, 0));
+  
+      // Get the end of the current date (11:59:59 PM)
+      const endDate = new Date(currentDate.setHours(23, 59, 59, 999));
+   console.log(`startdate{${startDate}} enddate  ${endDate}`)
+      // Query the database to find all orders created between startDate and endDate
+      const orderCounts = await Order.aggregate([
+        // {
+        //   $match: {
+        //     createdAt: { $gte: startDate, $lte: endDate }
+        //   }
+        // },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+            count: { $sum: 1 }
+          }
+        }
+      ]).sort({_id: 1});
+  
+      // Send the response containing the number of orders per day
+      res.json(orderCounts);
+    } catch (error) {
+      // Handle errors
+      console.error('Error fetching orders per day:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  };
+  export const getCancelledOrdersPerDay = async (req: Request, res: Response) => {
+    try {
+      // Get the current date
+      const currentDate = new Date();
+  
+      // Get the start of the current date (midnight)
+      const startDate = new Date(currentDate.setHours(0, 0, 0, 0));
+  
+      // Get the end of the current date (11:59:59 PM)
+      const endDate = new Date(currentDate.setHours(23, 59, 59, 999));
+  
+      // Query the database to find all cancelled orders created between startDate and endDate
+      const cancelledOrderCounts = await Order.aggregate([
+        {
+          $match: {
+            // createdAt: { $gte: startDate, $lte: endDate },
+            orderStatus: 'cancelled' // Filter cancelled orders
+          }
+        },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+            count: { $sum: 1 }
+          }
+        }
+      ]).sort({_id: 1});
+  
+      // Send the response containing the number of cancelled orders per day
+      res.json(cancelledOrderCounts);
+    } catch (error) {
+      // Handle errors
+      console.error('Error fetching cancelled orders per day:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  };
+  export const getOrderFoodPerDay = async (req: Request, res: Response) => {
+    console.log("reach getOrderFoodPerDay")
+    try {
+        // Aggregate orders by product ID and count the occurrences
+        const aggregatedOrders = await Order.aggregate([
+          {
+            $unwind: '$orderItems', // Split array into separate documents
+          },
+          {
+            $lookup: { // Join with the Product collection to get product details
+              from: 'products',
+              localField: 'orderItems.product',
+              foreignField: '_id',
+              as: 'product',
+            },
+          },
+          {
+            $unwind: '$product', // Unwind the product array
+          },
+          {
+            $group: { // Group by product name and count occurrences
+              _id: '$product.name',
+              count: { $sum: 1 },
+            },
+          },
+        ]);
+    
+        res.json(aggregatedOrders);
+      } catch (error) {
+        console.error('Error aggregating orders:', error);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+  };
 export const getOrderById = async (req: Request, res: Response) => {
     try {
         const orderId = req.params.orderId;
@@ -124,7 +238,11 @@ export const updateOrderById = async (req: Request, res: Response) => {
             orderId,
             { ...req.body },
             { new: true }
-        ).populate('user').populate('payment').exec();
+        ).populate({
+            path: 'orderItems.product',
+            model: 'Product'
+        })
+            .populate('payment');
 
         if (!updatedOrder) {
             return res.status(404).json({ success: false, message: 'Order not found' });

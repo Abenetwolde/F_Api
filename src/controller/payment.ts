@@ -1,17 +1,58 @@
+import User from "../model/user.model";
 import Payment from "../model/payment.model";
 import { Request, Response } from 'express';
 // Get All Payments
 export const getAllPayments = async (req: Request, res: Response) => {
+  console.log("payment reachout")
     try {
-      const payments = await Payment.find()
-        .populate('user')
+      let filter: any = {};
+
+      // Apply search filter if provided in the query parameters
+      if (typeof req.query.search === 'string') {
+          filter.orderId = { $regex: req.query.search, $options: 'i' };
+      }
+
+      // Define the sorting criteria based on the 'sortBy' query parameter
+      let sortQuery: any;
+      switch (req.query.sortBy) {
+          case 'latest':
+              sortQuery = { createdAt: -1 };
+              break;
+          case 'oldest':
+              sortQuery = { createdAt: 1 };
+              break;
+          default:
+              sortQuery = {};
+      }
+
+      // Parse the page and pageSize query parameters
+      const page = parseInt(req.query.page as string) || 1;
+      const pageSize = parseInt(req.query.pageSize as string) || 10; // Adjust the default page size as needed
+
+      // Calculate the number of orders to skip
+      const skip = (page - 1) * pageSize;
+      
+      const payments = await Payment.find(filter)
+        // .populate('user')
         .populate('order')
-        .sort('-createdAt') // Sort by creation date in descending order
-        .exec();
-  
+        .skip(skip)
+        .limit(pageSize)
+        .sort(sortQuery);
+        const count = await Payment.countDocuments(filter);
+
+        // Calculate the total number of pages
+        const totalPages = Math.ceil(count / pageSize);
+        const paymentWithUserDetails = await Promise.all(payments.map(async (pay) => {
+          const user = await User.findOne({telegramid:pay.user});
+          return { ...pay.toObject(), user };
+      }));
       res.status(200).json({
         success: true,
-        payments,
+        payments:paymentWithUserDetails,
+        count,
+        page,
+        pageSize,
+        totalPages,
       });
     } catch (error) {
       console.error(error);

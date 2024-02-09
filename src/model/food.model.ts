@@ -18,7 +18,7 @@ interface IProduct extends Document {
   cookTime: string;
   highlights:string[];
 
-
+  postStatus:boolean
 }
 
 // Schema definition
@@ -37,6 +37,7 @@ const productSchema: Schema<IProduct> = new Schema<IProduct>({
         type: String,
     }
 ],
+postStatus: { type: Boolean, default: true },
   orderQuantity: { type: Number, default: 0 },
   cookTime: { type: String },
 });

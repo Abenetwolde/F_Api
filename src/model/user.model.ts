@@ -10,7 +10,7 @@ const addressSchema = new Schema({
 });
 const LanguageEnum = {
   EN: 'en',
-  RU: 'ru',
+  AM: 'am',
 };
 export interface IUser extends Document {
     // _id:String,
@@ -36,7 +36,8 @@ export interface IUser extends Document {
   subscriptions: Array<Schema.Types.ObjectId>;
   locale: string;
   language: string;
-  is_bot:Boolean
+  is_bot:Boolean,
+  createdAt:Date
 }
 
 const userSchema = new Schema<IUser>({
@@ -77,6 +78,7 @@ const userSchema = new Schema<IUser>({
     default: LanguageEnum.EN,
     enum: Object.values(LanguageEnum),
   },
+  createdAt: { type: Date, default: Date.now },
 });
 
 // Export the User model

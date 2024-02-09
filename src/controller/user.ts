@@ -19,12 +19,9 @@ exports.createUser = async (req: Request, res: Response) => {
                 { expiresIn: "7d" }
             );
             // const token = jwt.sign({ telegramId }, 'your_secret_key');
-            user = new User({
-                telegramid: req.body.telegramid,
-                name: req.body.name,
-                last: req.body.last,
-                token: token
-            })
+            user = new User(req.body)
+           
+           
             user = await user.save();
 
             res.status(201).json({
@@ -143,7 +140,43 @@ exports.getAllAuser = async (req: Request, res: Response) => {
 
 
 }
+exports.NewuserDaily = async (req: Request, res: Response) => {
+    console.log("hit the get new user api")
+    try {
+        // Get the current date
+        const currentDate = new Date();
+    
+        // Get the start of the current date (midnight)
+        const startDate = new Date(currentDate.setHours(0, 0, 0, 0));
+    
+        // Get the end of the current date (11:59:59 PM)
+        const endDate = new Date(currentDate.setHours(23, 59, 59, 999));
+    
+        // Query the database to find all users created between startDate and endDate
+        const newUserCounts = await User.aggregate([
+        //   {
+        //     $match: {
+        //       createdAt: { $gte: startDate, $lte: endDate }
+        //     }
+        //   },
+          {
+            $group: {
+              _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+              count: { $sum: 1 }
+            }
+          }
+        ]).sort({_id: 1});
+    
+        // Send the response containing the number of new users joined per date
+        res.json(newUserCounts);
+      } catch (error) {
+        // Handle errors
+        console.error('Error fetching new users per date:', error);
+        res.status(500).json({ message: 'Internal server error' });
+      }
 
+
+}
 exports.AddsFavorite = async (req: Request, res: Response) => {
     try {
         const user = await User.findById(req.params.id);
