@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import Order from '../model/order.model';
 import Product from '../model/food.model';
 import User from '../model/user.model';
+import axios from 'axios';
 const generateUniqueID = () => {
     return Math.floor(1000 + Math.random() * 9000);
 };
@@ -236,6 +237,7 @@ export const updateOrderById = async (req: Request, res: Response) => {
         const orderId = req.params.orderId;
         const updatedOrder = await Order.findByIdAndUpdate(
             orderId,
+            
             { ...req.body },
             { new: true }
         ).populate({
@@ -247,8 +249,35 @@ export const updateOrderById = async (req: Request, res: Response) => {
         if (!updatedOrder) {
             return res.status(404).json({ success: false, message: 'Order not found' });
         }
+        const user = await User.findOne({telegramid:updatedOrder.telegramid});;
 
-        res.status(200).json({ success: true, order: updatedOrder });
+        if (user) {
+          // If the user is found, send them a message on Telegram
+          let message = '';
+          const status=req.body.orderStatus
+          switch(status){
+           case "completed"
+           :message = '\n\nYour order has been completed.\n\nPlease check your profile for more details.' 
+           break;
+           case "cancelled":
+            message=  "\n\nSorry, Your order has been cancelled."
+            break;
+           default:break;
+          }
+          // const url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage?chat_id=${user.telegramid}&text=${encodeURIComponent(message)}`;
+          const url = `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage?chat_id=${user.telegramid}&text=${encodeURIComponent(message)}`;
+    
+          // Send the HTTP request
+          const response = await axios.post(url);
+    
+          if (response.status !== 200) {
+            console.error('Failed to send message on Telegram:', response.data);
+          }
+        }
+        const ordersWithUserDetails =await User.findOne({telegramid:updatedOrder.telegramid});
+          const updateorder= { ...updatedOrder.toObject(),user: ordersWithUserDetails };
+            
+        res.status(200).json({ success: true, order: updateorder });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'Server error' });

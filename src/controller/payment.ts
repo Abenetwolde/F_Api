@@ -43,7 +43,7 @@ export const getAllPayments = async (req: Request, res: Response) => {
         // Calculate the total number of pages
         const totalPages = Math.ceil(count / pageSize);
         const paymentWithUserDetails = await Promise.all(payments.map(async (pay) => {
-          const user = await User.findOne({telegramid:pay.user});
+          const user = await User.findOne({telegramid:pay.telegramid});
           return { ...pay.toObject(), user };
       }));
       res.status(200).json({

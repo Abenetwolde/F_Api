@@ -3,11 +3,11 @@ import mongoose from 'mongoose';
 
 
 const paymentSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.Number,  // Use mongoose.Schema.Types.Number to specify a number type
-    ref: "User",
-    // required: true
-},
+    telegramid: {
+        type: Number,  // Use mongoose.Schema.Types.Number to specify a number type
+        ref: "Users",
+        // required: true
+    },
 order: {
     type: mongoose.Schema.ObjectId,
     ref: "Order",

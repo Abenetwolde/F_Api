@@ -36,7 +36,19 @@ export interface IUser extends Document {
   subscriptions: Array<Schema.Types.ObjectId>;
   locale: string;
   language: string;
+  role: {
+    type: String,
+    default: 'USER',
+    enum: ['ADMIN', 'SUPER ADMIN','USER'],
+    required: [true, 'Role is required'],
+  },
   is_bot:Boolean,
+  from: {
+    type: String,
+    default: 'BOT',
+    enum: ['BOT', 'CHANNEL'],
+    required: [true, 'status is required'],
+  }, 
   createdAt:Date
 }
 
@@ -64,7 +76,19 @@ const userSchema = new Schema<IUser>({
   is_bot:{
     type: Boolean,
   },
- 
+  role: {
+    type: String,
+    default: 'USER',
+    enum: ['ADMIN', 'SUPER ADMIN','USER'],
+    required: [true, 'Role is required'],
+  },
+
+  from: {
+    type: String,
+    default: 'BOT',
+    enum: ['BOT', 'CHANNEL'],
+    required: [true, 'status is required'],
+  },
   token: {
     type: String,
   },

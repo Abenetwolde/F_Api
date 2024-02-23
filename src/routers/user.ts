@@ -3,7 +3,7 @@ import express from 'express';
 const { createUser, getUserDetails,
     updateUserDetails, adminLogin,
     deleteAuser, adminCreate, getAllAuser,
-    AddsFavorite,RemovesFavorite,NewuserDaily
+    AddsFavorite,RemovesFavorite,NewuserDaily,
 } = require('../controller/user');
 const router = express.Router();
 

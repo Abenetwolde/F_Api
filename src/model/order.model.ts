@@ -68,7 +68,7 @@ interface Order extends Document {
     telegramid: { type: Number },
     orderStatus: {
       type: String,
-      enum: ['pending', 'completed',"cancelled"],
+      enum: ['pending', 'completed',"cancelled","delivered"],
       default: 'pending',
     },
     orderfromtelegram: { type: Boolean, default: false },

@@ -210,13 +210,7 @@ export const updateProductById = async (req: Request, res: Response) => {
       const updatedProduct = await Product.findByIdAndUpdate(
         productId,
         {
-          name,
-          description,
-          price,
-          category,
-          images,
-          tags,
-          cookTime,
+        ...req.body,
         },
         { new: true }
       ).populate('category');
